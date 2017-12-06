@@ -6,6 +6,16 @@
 #Creates 10 LVM logical volumes (+- 50MB each) in this file
 #Mounts them to /mnt/test/vol01 .. vol10 directories
 
+
+#error exit function
+error_exit()
+{
+	echo "$1" 1>&2
+	exit 1
+}
+
+
+
 #Clean part
 i=0
 temp=$(losetup --list | grep "/var/test_file")
@@ -46,7 +56,14 @@ if [ -d /mnt/test ]; then
 fi
 
 #creating part
-dd if=/dev/zero of=/var/test_file bs=1024 count=512000
+
+#sizes of new file
+block_size=1024
+num_blocks=512000
+dd if=/dev/zero of=/var/test_file bs=$block_size count=$num_blocks
+if [ "$?" -ne "0" ]; then
+	error_exit "Not enough space to create new file with size $((block_size * num_blocks)) bytes."
+fi
 
 j=0
 while  [  $j -lt 10 ]; do
